@@ -1,0 +1,59 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Pré-Venda de Tokens</title>
+  <script src="https://cdn.jsdelivr.net/npm/web3/dist/web3.min.js"></script>
+</head>
+<body>
+  <h1>Compre Tokens na Pré-Venda</h1>
+  <button onclick="connectWallet()">Conectar Carteira</button>
+  <br><br>
+  <input type="text" id="bnbAmount" placeholder="Digite o valor em BNB">
+  <button onclick="buyTokens()">Comprar Tokens</button>
+
+  <p id="status"></p>
+
+  <script>
+    const contractAddress = "0x707a3DEAdC779d1D79c1C5fbEa5633347A9c04Ce";
+    const contractABI = [ /* ABI do contrato */ ];
+    let web3;
+    let contract;
+    let userAccount;
+
+    async function connectWallet() {
+      if (window.ethereum) {
+        web3 = new Web3(window.ethereum);
+        await window.ethereum.request({ method: 'eth_requestAccounts' });
+        const accounts = await web3.eth.getAccounts();
+        userAccount = accounts[0];
+        document.getElementById('status').innerText = `Carteira conectada: ${userAccount}`;
+        contract = new web3.eth.Contract(contractABI, contractAddress);
+      } else {
+        alert("MetaMask não encontrado!");
+      }
+    }
+
+    async function buyTokens() {
+      const bnbAmount = document.getElementById('bnbAmount').value;
+      if (!bnbAmount) {
+        alert("Por favor, digite um valor em BNB.");
+        return;
+      }
+      const amountInWei = web3.utils.toWei(bnbAmount, 'ether');
+
+      try {
+        await contract.methods.buyTokens().send({
+          from: userAccount,
+          value: amountInWei
+        });
+        document.getElementById('status').innerText = `Compra de ${bnbAmount} BNB realizada com sucesso!`;
+      } catch (error) {
+        document.getElementById('status').innerText = `Erro na compra: ${error.message}`;
+      }
+    }
+  </script>
+</body>
+</html>
